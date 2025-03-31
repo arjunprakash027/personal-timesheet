@@ -1,7 +1,11 @@
 // lib/session.ts
-import { IronSessionOptions } from 'iron-session';
+import { SessionOptions } from 'iron-session';
 
-export const sessionOptions: IronSessionOptions = {
+export interface IronSessionCustom {
+  isLoggedIn: boolean;
+}
+
+export const sessionOptions: SessionOptions = {
   password: process.env.SESSION_SECRET || 'fhjkbvihbeuivbiuerbviebrviuebrvhsfjkghjernuiervgeeghjkernbfuierbvuehr',
   cookieName: 'timesheet-session',
   cookieOptions: {

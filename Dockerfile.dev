@@ -6,7 +6,7 @@ FROM node:20-slim
 WORKDIR /app
 
 # Set Node environment to development
-ENV NODE_ENV=development
+#ENV NODE_ENV=development
 
 # Set user to non-root for better security practice, even in dev
 # Create a non-root user and group first (optional but good practice)

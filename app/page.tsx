@@ -3,6 +3,28 @@
 import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 import { ITimesheetEntry } from '@/models/TimesheetEntry';
 
+interface TimesheetResponse {
+  success: boolean;
+  data: ITimesheetEntry[];
+  error?: string;
+}
+
+export type TimesheetSubset = Pick<
+  ITimesheetEntry,
+  | 'date'
+  | 'taskActivity'
+  | 'categoryProject'
+  | 'focus'
+  | 'energy'
+  | 'outcomeResult'
+  | 'learningsReflections'
+  | 'productivity'
+  | 'enjoyment'
+  | 'challenge'
+  | 'comments'
+  | '_id'
+>;
+
 const formatDate = (date: Date | string | undefined): string => {
   if (!date) return 'N/A';
   try {
@@ -12,12 +34,12 @@ const formatDate = (date: Date | string | undefined): string => {
       day: '2-digit',
     });
   } catch (e) {
-    return 'Invalid Date';
+    return `Invalid Date : ${e}`;
   }
 };
 
 const initialFormData: Partial<ITimesheetEntry> = {
-  date: new Date().toISOString().split('T')[0],
+  date: new Date(new Date().toDateString()),
   taskActivity: '',
   categoryProject: '',
   focus: undefined,
@@ -31,7 +53,7 @@ const initialFormData: Partial<ITimesheetEntry> = {
 };
 
 export default function HomePage() {
-  const [entries, setEntries] = useState<ITimesheetEntry[]>([]);
+  const [entries, setEntries] = useState<TimesheetSubset[]>([]);
   const [formData, setFormData] = useState<Partial<ITimesheetEntry>>(initialFormData);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -54,18 +76,34 @@ export default function HomePage() {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
       }
-      const data = await response.json();
+      const data = (await response.json()) as TimesheetResponse;
+
+      console.log('Fetched entries:', data.data[0]);
       if (data.success) {
-        const formattedEntries = data.data.map((entry: any) => ({
-          ...entry,
-          date: new Date(entry.date),
-        }));
+        const formattedEntries: TimesheetSubset[] = data.data.map((entry)=> ({
+        _id: entry._id,
+        date: new Date(entry.date),
+        taskActivity: entry.taskActivity,
+        categoryProject: entry.categoryProject,
+        focus: entry.focus,
+        energy: entry.energy,
+        productivity: entry.productivity,
+        enjoyment: entry.enjoyment,
+        challenge: entry.challenge,
+        outcomeResult: entry.outcomeResult,
+        learningsReflections: entry.learningsReflections,
+        comments: entry.comments
+      }));
         setEntries(formattedEntries);
       } else {
         throw new Error(data.error || 'Failed to fetch entries');
       }
-    } catch (err: any) {
-      setError(err.message || 'An unknown error occurred.');
+    } catch (err: unknown) {
+      let errorMessage = 'unknown error occurred';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
       setEntries([]);
     } finally {
       setIsLoading(false);
@@ -73,6 +111,7 @@ export default function HomePage() {
   };
 
   useEffect(() => {
+    console.log('Selected month:', selectedMonth);
     fetchEntries(selectedMonth);
   }, [selectedMonth]);
 
@@ -118,8 +157,12 @@ export default function HomePage() {
       }
       setFormData(initialFormData);
       fetchEntries(selectedMonth);
-    } catch (err: any) {
-      setFormError(err.message || 'An unknown error occurred.');
+    } catch (err: unknown) {
+      let errorMessage = 'unknown error occurred';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      setFormError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

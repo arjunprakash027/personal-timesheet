@@ -3,6 +3,17 @@ import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
+interface MongooseCache {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+}
+
+/* eslint-disable no-var */
+declare global {
+  var __MONGOOSE_CACHE__: MongooseCache | undefined;
+}
+/* eslint-enable no-var */
+
 if (!MONGODB_URI) {
   throw new Error(
     'Please define the MONGODB_URI environment variable inside .env.local'
@@ -14,10 +25,10 @@ if (!MONGODB_URI) {
  * in development. This prevents connections growing exponentially
  * during API Route usage.
  */
-let cached = (global as any).mongoose;
+const cached: MongooseCache = globalThis.__MONGOOSE_CACHE__ || {conn: null, promise: null};
 
-if (!cached) {
-  cached = (global as any).mongoose = { conn: null, promise: null };
+if (!globalThis.__MONGOOSE_CACHE__) {
+  globalThis.__MONGOOSE_CACHE__ = cached;
 }
 
 async function dbConnect() {

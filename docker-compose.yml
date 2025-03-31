@@ -23,8 +23,8 @@ services:
       # Mount .next folder as well if needed to persist cache between runs (optional)
       # - /app/.next
     # Environment variables
-    environment:
-      NODE_ENV: development # Explicitly set for clarity
+    # environment:
+    #   NODE_ENV: development # Explicitly set for clarity
       # --- Uncomment if Hot Reloading is not working reliably ---
       # Often needed on Windows or macOS due to filesystem event differences
       # CHOKIDAR_USEPOLLING: "true"

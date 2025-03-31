@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import crypto from 'crypto';
 import { getIronSession } from 'iron-session';
-import { sessionOptions } from '@/lib/session';
+import { sessionOptions, IronSessionCustom } from '@/lib/session';
 
 const HASHED_PASSWORD = process.env.HASHED_PASSWORD;
 
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
   if (submittedHash === HASHED_PASSWORD) {
     // Create a session using the cookies helper from Next.js
     const cookieStore = await cookies();
-    const session = await getIronSession(cookieStore, sessionOptions);
+    const session = await getIronSession<IronSessionCustom>(cookieStore, sessionOptions);
     session.isLoggedIn = true;
     await session.save();
 
