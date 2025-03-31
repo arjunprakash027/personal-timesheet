@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # Your Next.js development service
+  timesheet-app-dev:
+    # Build using the development Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile.dev # Point to the dev Dockerfile
+    container_name: timesheet_app_dev
+    # Port mapping
+    ports:
+      - "3000:3000"
+    # --- Volume Mounting for Hot Reloading ---
+    volumes:
+      # Mount the entire project directory from host to /app in container
+      - .:/app
+      # Define an anonymous volume for node_modules
+      # This prevents the host's node_modules (if any) from overwriting
+      # the node_modules installed inside the container in the Dockerfile.
+      # This is crucial for avoiding OS compatibility issues.
+      - /app/node_modules
+      # Mount .next folder as well if needed to persist cache between runs (optional)
+      # - /app/.next
+    # Environment variables
+    environment:
+      NODE_ENV: development # Explicitly set for clarity
+      # --- Uncomment if Hot Reloading is not working reliably ---
+      # Often needed on Windows or macOS due to filesystem event differences
+      # CHOKIDAR_USEPOLLING: "true"
+
+    # Load variables from a .env file (can be the same one as for production)
+    env_file:
+      - .env
+    # Optional: Override the CMD from Dockerfile.dev if needed
+    # command: npm run dev
+
+    # Optional: Add depends_on if using the mongo service below
+    # depends_on:
+    #   - mongo_db_dev
+
+  # --- Optional: MongoDB Service for Development ---
+  # You can reuse the same definition as in the production compose file
+  # or adjust ports/data volumes if needed for dev separation
+  # mongo_db_dev:
+  #   image: mongo:latest
+  #   container_name: timesheet_mongo_dev
+  #   ports:
+  #     - "27018:27017" # Map to a different host port (e.g., 27018) to avoid conflicts
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+  #     MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+  #     MONGO_INITDB_DATABASE: ${MONGO_INIT_DB}
+  #   volumes:
+  #     - mongo-dev-data:/data/db # Use a separate named volume for dev data
+  #   restart: unless-stopped
+
+# --- Optional: Named Volumes for Development ---
+# Uncomment if using the mongo_db_dev service
+# volumes:
+#   mongo-dev-data:

@@ -1,0 +1,39 @@
+# Dockerfile.dev
+# Use a specific LTS version for stability (e.g., Node 20)
+FROM node:20-slim
+
+# Set working directory
+WORKDIR /app
+
+# Set Node environment to development
+ENV NODE_ENV=development
+
+# Set user to non-root for better security practice, even in dev
+# Create a non-root user and group first (optional but good practice)
+# RUN addgroup --system --gid 1001 nodejs
+# RUN adduser --system --uid 1001 node
+# USER node
+
+# Copy package.json and lock file ONLY
+# Doing this first leverages Docker cache for dependencies
+COPY package.json yarn.lock* package-lock.json* ./
+
+RUN npm install
+# Install all dependencies, including devDependencies
+RUN npm ci --include=dev
+# Or if using yarn:
+# RUN yarn install --frozen-lockfile
+
+# At this point, the image contains Node + all dependencies.
+# The source code will be mounted via docker-compose.
+
+# Expose the default Next.js development port
+EXPOSE 3000
+
+# Default command to run the Next.js development server
+# This will be executed when the container starts (unless overridden in docker-compose)
+#CMD ["npm", "run", "dev"] 
+
+CMD ["tail", "-f", "/dev/null"]
+# Or if using yarn:
+# CMD ["yarn", "dev"]
